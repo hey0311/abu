@@ -416,7 +416,8 @@ def load_kline_df_net(source, temp_symbol, n_folds, start, end, start_int, end_i
 
     if data_source.check_support():
         # 通过数据源混入的SupportMixin类检测数据源是否支持temp_symbol对应的市场数据
-        df = data_source.kline(n_folds=n_folds, start=start, end=end)
+        df = data_source.minute(n_folds=n_folds, start=start, end=end)
+        # df = data_source.kline(n_folds=n_folds, start=start, end=end)
 
     if df is not None and save:
         """
@@ -425,5 +426,5 @@ def load_kline_df_net(source, temp_symbol, n_folds, start, end, start_int, end_i
             再次发起请求时不会走网络，会从本地获取数据
         """
         df_key = _kl_unique_key(temp_symbol, start_int, end_int)
-        dump_kline_df(df, temp_symbol.value, df_key)
+        # dump_kline_df(df, temp_symbol.value, df_key)
     return df

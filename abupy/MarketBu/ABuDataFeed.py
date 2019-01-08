@@ -22,13 +22,13 @@ from ..CoreBu import ABuEnv
 from ..MarketBu import ABuNetWork
 from ..MarketBu.ABuDataBase import StockBaseMarket, SupportMixin, FuturesBaseMarket, TCBaseMarket
 from ..MarketBu.ABuDataParser import BDParser, TXParser, NTParser, SNUSParser
-from ..MarketBu.ABuDataParser import SNFuturesParser, SNFuturesGBParser, HBTCParser
+from ..MarketBu.ABuDataParser import SNFuturesParser, SNFuturesGBParser, HBTCParser, CoinParser
 from ..UtilBu import ABuStrUtil, ABuDateUtil, ABuMd5
 from ..UtilBu.ABuDTUtil import catch_error
 from ..CoreBu.ABuDeprecated import AbuDeprecated
 # noinspection PyUnresolvedReferences
 from ..CoreBu.ABuFixes import xrange, range, filter
-
+import numpy as np
 """网络请求（连接10秒，接收60秒）超时时间"""
 K_TIME_OUT = (10, 60)
 
@@ -431,6 +431,7 @@ class HBApi(TCBaseMarket, SupportMixin):
             req_cnt = folds * ABuEnv.g_market_trade_year
 
         url = HBApi.K_NET_BASE % (self._symbol.symbol_code, req_cnt)
+        print('huobi')
         data = ABuNetWork.get(url=url, timeout=K_TIME_OUT).json()
         kl_df = self.data_parser_cls(self._symbol, data).df
         if kl_df is None:
@@ -440,3 +441,54 @@ class HBApi(TCBaseMarket, SupportMixin):
     def minute(self, *args, **kwargs):
         """分钟k线接口"""
         raise NotImplementedError('HBApi minute NotImplementedError!')
+class OkexApi(TCBaseMarket, SupportMixin):
+    """hb数据源，支持币类，比特币，莱特币"""
+
+    K_NET_BASE = 'https://www.huobi.com/qt/staticmarket/%s_kline_100_json.js?length=%d'
+
+    def __init__(self, symbol):
+        """
+        :param symbol: Symbol类型对象
+        """
+        super(OkexApi, self).__init__(symbol)
+        # 设置数据源解析对象类
+        self.data_parser_cls = CoinParser
+
+    def _support_market(self):
+        """只支持币类市场"""
+        return [EMarketTargetType.E_MARKET_TARGET_TC]
+
+    def kline(self, n_folds=2, start=None, end=None):
+        """日k线接口"""
+        req_cnt = n_folds * ABuEnv.g_market_trade_year
+        if start is not None and end is not None:
+            # 向上取整数，下面使用_fix_kline_pd再次进行剪裁, 要使用current_str_date不能是end
+            folds = math.ceil(ABuDateUtil.diff(ABuDateUtil.date_str_to_int(start),
+                                               ABuDateUtil.current_str_date()) / 365)
+            req_cnt = folds * ABuEnv.g_market_trade_year
+
+        # url = HBApi.K_NET_BASE % (self._symbol.symbol_code, req_cnt)
+        # data = ABuNetWork.get(url=url, timeout=K_TIME_OUT).json()
+        data=np.loadtxt("../kldata/ticker3.csv")
+        kl_df = self.data_parser_cls(self._symbol, data).df
+        if kl_df is None:
+            return None
+        return TCBaseMarket._fix_kline_pd(kl_df, n_folds, start, end)
+
+    def minute(self, n_folds=2, start=None, end=None):
+        """分钟k线接口"""
+        req_cnt = n_folds * ABuEnv.g_market_trade_year
+        if start is not None and end is not None:
+            # 向上取整数，下面使用_fix_kline_pd再次进行剪裁, 要使用current_str_date不能是end
+            folds = math.ceil(ABuDateUtil.diff(ABuDateUtil.date_str_to_int(start),
+                                               ABuDateUtil.current_str_date()) / 365)
+            req_cnt = folds * ABuEnv.g_market_trade_year
+
+        # url = HBApi.K_NET_BASE % (self._symbol.symbol_code, req_cnt)
+        # data = ABuNetWork.get(url=url, timeout=K_TIME_OUT).json()
+        print('load_data...')
+        data=np.load("../kldata/ticker4.npy")
+        kl_df = self.data_parser_cls(self._symbol, data).df
+        if kl_df is None:
+            return None
+        return TCBaseMarket._fix_kline_pd(kl_df, n_folds, start, end)

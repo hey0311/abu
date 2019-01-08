@@ -193,4 +193,5 @@ class TCBaseMarket(six.with_metaclass(ABCMeta, BaseMarket)):
     @classmethod
     def _fix_kline_pd(cls, kl_df, n_folds, start=None, end=None):
         """修复kline接口的返回金融时间序列"""
-        return cls._fix_kline_pd_se(kl_df, n_folds, start=start, end=end)
+        return kl_df
+        # return cls._fix_kline_pd_se(kl_df, n_folds, start=start, end=end)

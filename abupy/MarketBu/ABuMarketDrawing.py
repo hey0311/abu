@@ -166,7 +166,7 @@ def plot_candle_form_klpd(kl_pd, day_sum=False, html_bk=False, view_indexs=None,
                       fn, day_sum, html_bk, save)
 
 
-def plot_candle_stick(date, p_open, high, low, close, volume, view_index, symbol, day_sum, html_bk, save, minute=False):
+def plot_candle_stick(date, p_open, high, low, close, volume, view_index, symbol, day_sum, html_bk, save, minute= True):
     """
     展开各个k图绘制数据进行绘制
     :param date: 金融时间序列交易日时间，pd.DataFrame.index对象

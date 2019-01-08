@@ -100,7 +100,20 @@ def date_str_to_int(date_str, split='-', fix=True):
         date_str = fix_date(date_str)
     string_date = date_str.replace(split, '')
     return int(string_date)
-
+def minute_date_str_to_int(date_str, split='-', fix=True):
+    """
+    eg. 2016-01-01 12:10:10 -> 20160101121010
+    不使用时间api，直接进行字符串解析，执行效率高
+    :param date_str: %Y-%m-%d形式时间str对象
+    :param split: 年月日的分割符，默认'-'
+    :param fix: 是否修复日期不规范的写法，eg. 2016-1-1 fix 2016-01-01
+    :return: int类型时间
+    """
+    # if fix and split == '-':
+        # 只针对%Y-%m-%d形式格式标准化日期格式
+        # date_str = fix_date(date_str)
+    string_date = date_str.replace(split, '').replace(':','').replace(' ','')
+    return int(string_date)
 
 def fix_date(date_str):
     """
